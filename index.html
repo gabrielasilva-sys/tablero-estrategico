@@ -535,6 +535,68 @@ align-items:center;
 
 
 
+.indicador-meta{
+    position:relative;
+    margin-top:8px;
+}
+
+.meta-tooltip{
+    position:absolute;
+    bottom:-8px;
+    left:50%;
+    transform:translate(-50%,100%);
+    background:#0f2c4c;
+    color:white;
+    padding:10px 14px;
+    border-radius:8px;
+    font-size:12px;
+    width:max-content;
+    max-width:220px;
+    opacity:0;
+    pointer-events:none;
+    transition:all 0.25s ease;
+    box-shadow:0 6px 18px rgba(0,0,0,0.25);
+}
+
+.indicador-meta:hover .meta-tooltip{
+    opacity:1;
+    transform:translate(-50%,110%);
+}
+
+.meta-label{
+    font-weight:600;
+    color:#90caf9;
+}
+
+
+
+
+.responsable-indicador{
+margin-top:8px;
+font-size:12px;
+color:#5f6f82;
+font-weight:500;
+text-align:center;
+}
+
+
+.filtros-cascada{
+display:flex;
+gap:12px;
+margin-bottom:25px;
+justify-content:center;
+flex-wrap:wrap;
+}
+
+.filtros-cascada select,
+.filtros-cascada input{
+padding:10px 14px;
+border-radius:8px;
+border:1px solid #dce3ec;
+font-size:14px;
+}
+
+
 
 
 
@@ -701,6 +763,31 @@ IM13 – % Cumplimiento Roadmap<br>
 
 <h2>CASCADA DE EJECUCIÓN</h2>
 
+
+
+<div class="filtros-cascada">
+
+<select id="filtroResponsable">
+<option value="">Todos los responsables</option>
+<option value="Financiera">Financiera</option>
+<option value="Comercial">Comercial</option>
+<option value="Operaciones">Operaciones</option>
+<option value="Infraestructura">Infraestructura</option>
+<option value="Talento Humano">Talento Humano</option>
+<option value="Calidad">Calidad</option>
+<option value="SST">SST</option>
+</select>
+
+<input 
+type="text" 
+id="busquedaIndicador"
+placeholder="Buscar indicador..."
+>
+
+</div>
+
+
+
 <table class="table">
 <tr>
 <th>1. ESTRATÉGICO</th>
@@ -723,6 +810,8 @@ IM1 – Margen EBITDA (%)<br>
 </td>
 
 <td>
+
+
 <strong>OT1 – Gestión Estratégica del Portafolio de Nuevos Negocios</strong>
 <div class="desc">
 Gestionar la composición del portafolio de nuevos negocios priorizando servicios Cloud y gestionados frente a colocación simple, mejorando la estructura de margen.
@@ -966,6 +1055,24 @@ const linksFormularios = {
 "IM15 – % Procesos Automatizados con IA":"https://forms.gle/RkWbRRN2rdTuhnFfA"
 };
 
+const responsables = {
+"IM1 – Margen EBITDA (%)":"Financiera",
+"IM2 – Índice Calidad Portafolio Nuevos Negocios (%)":"Comercial",
+"IM3 – IECEO":"Operaciones",
+"IM4 – Índice Confiabilidad Estructural (%)":"Infraestructura",
+"IM5 – Índice Madurez Operativa Integrada (%)":"Operaciones",
+"IM6 – Forecast Accuracy (%)":"Comercial",
+"IM7 – Efectividad Conversión Pipeline":"Comercial",
+"IM8 – Posicionamiento Diferencial":"Comercial",
+"IM9 – % Oportunidades con nuevo pitch":"Comercial",
+"IM10 – ISOg":"Talento Humano",
+"IM11 – Índice Protección Procesos Críticos":"Talento Humano y Calidad",
+"IM12 – Cumplimiento Requisitos Críticos SST":"SST",
+"IM13 – % Cumplimiento Roadmap":"Calidad",
+"IM14 – % Acciones Estratégicas QBR cerradas":"Calidad",
+"IM15 – % Procesos Automatizados con IA":"Calidad"
+};
+
 indicadores.forEach(ind => {
 
 if(ind.innerHTML.includes("<br>")){
@@ -973,6 +1080,7 @@ if(ind.innerHTML.includes("<br>")){
 let partes = ind.innerHTML.split("<br>");
 let titulo = partes[0].trim();
 let linkFormulario = linksFormularios[titulo] || "#";
+let responsable = responsables[titulo] || "Sin asignar";
 
 
 let formula = partes.slice(1).join("<br>");
@@ -981,15 +1089,18 @@ ind.innerHTML = `
 <strong>${titulo}</strong>
 
 <div class="acciones-indicador">
-    <button class="btn-formula">Ver fórmula</button>
-    <a href="${linkFormulario}" target="_blank">
-        <button class="btn-reporte">Reportar</button>
-    </a>
+<button class="btn-formula">Ver fórmula</button>
+<a href="${linkFormulario}" target="_blank">
+<button class="btn-reporte">Reportar</button>
+</a>
+</div>
+
+<div class="responsable-indicador">
+Responsable: ${responsable}
 </div>
 
 <div class="formula">${formula}</div>
 `;
-
 let boton = ind.querySelector(".btn-formula");
 let formulaDiv = ind.querySelector(".formula");
 
@@ -1008,6 +1119,32 @@ boton.textContent = "Ocultar fórmula";
 });
 
 });
+
+const filtroResponsable = document.getElementById("filtroResponsable");
+const busqueda = document.getElementById("busquedaIndicador");
+
+function filtrarCascada(){
+
+let resp = filtroResponsable.value.toLowerCase();
+let texto = busqueda.value.toLowerCase();
+
+document.querySelectorAll(".table tr").forEach((fila,i)=>{
+
+if(i===0) return; // saltar encabezado
+
+let contenido = fila.innerText.toLowerCase();
+
+let coincideResp = resp === "" || contenido.includes(resp);
+let coincideTexto = texto === "" || contenido.includes(texto);
+
+fila.style.display = (coincideResp && coincideTexto) ? "" : "none";
+
+});
+
+}
+
+filtroResponsable.addEventListener("change", filtrarCascada);
+busqueda.addEventListener("keyup", filtrarCascada);
 
 function ingresarMapa(){
     document.getElementById("portada").style.display="none";
